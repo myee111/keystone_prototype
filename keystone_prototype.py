@@ -48,10 +48,6 @@ def get_buckets():
                 abort(404)
 
 
-def test():
-    return 'another post request'
-
-
 def return_buckets():
     if check_credential(request.json['access_id'], request.json['access_secret']):
             if auth_keystone(my_grid1) is True:
@@ -95,6 +91,5 @@ def s3_call(credentials):
 
 
 if __name__ == '__main__':
-    # print s3_call(my_grid1)
     app.run()
 
