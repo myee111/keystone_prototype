@@ -2,8 +2,6 @@ from flask import Flask, request, abort
 import boto
 import boto.s3.connection
 from boto.s3.connection import Location
-from keystoneclient.v2_0 import client
-from keystoneclient.exceptions import AuthorizationFailure, Unauthorized
 import q
 import requests
 import base64
@@ -63,17 +61,13 @@ def return_buckets():
                 return str(s3_get_buckets(my_grid1)), 201
 
 
-def check_credential(access_id, access_secret, credential_dict):
-    if credential_dict['access_id'] == access_id and credential_dict['access_secret'] == access_secret:
-        return True
-    else:
-        return False
-
 @q
 def check_credential_keystone_s3(access_id, access_secret, msg):
 
     decoded = base64.urlsafe_b64decode(msg)
     keystone_server = 'http://10.96.96.53:35357/v2.0/s3tokens'
+    # The signed_msg should be calculated by the client and should be passed through in the POST request.
+    # That way the secret key doesn't need to be sent in the request.
     signed_msg = base64.encodestring(hmac.new(access_secret, str(decoded), hashlib.sha1).digest()).strip()
     creds = {'credentials': {'access': access_id, 'token': msg, 'signature': signed_msg}}
     data = json.dumps(creds)
@@ -89,29 +83,6 @@ def check_credential_keystone_s3(access_id, access_secret, msg):
         return True
     else:
         return False
-
-
-def auth_keystone(cred):
-    if authenticate_user(cred['keystone_user'], cred['keystone_password'], PUBLIC_ENDPOINT):
-        result = True
-    else:
-        result = False
-    return result
-
-
-def authenticate_user(user_name, password, url):
-    # User authenticates to Keystone server using public endpoint.
-    # Must specify a user, password and tenant.
-
-    print 'Authenticating user: ' + user_name
-    try:
-        keystone = client.Client(username=user_name, password=password, auth_url=url)
-        print 'User Token: ' + keystone.auth_token
-    except AuthorizationFailure as af:
-        print 'Authorization Failure: ' + af.message
-    except Unauthorized as u:
-        print 'Unauthorized: ' + u.message
-    return keystone.auth_token
 
 @q
 def s3_get_buckets(credentials):
