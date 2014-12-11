@@ -12,8 +12,6 @@ import requests # pip install requests
 import json
 import q
 
-TMPDIR = 'c:/'
-
 # ************* REQUEST VALUES *************
 method = 'GET'
 # service = 's3'
@@ -143,8 +141,10 @@ token = 'R0VUCgoKV2VkLCAxMCBEZWMgMjAxNCAyMjo0NzowNiBHTVQKLw=='
 
 msg = base64.urlsafe_b64decode(token)
 
+encode = base64.urlsafe_b64encode(msg)
+print 'encoded', encode
+
 signed = base64.encodestring(hmac.new(secret_key, msg, hashlib.sha1).digest()).strip()
-print 'signed: ' + signed
 
 creds = {
     'credentials':
@@ -157,13 +157,15 @@ creds = {
         }
 }
 
-print 'access: ' + access_key
-
 req = requests.post(
     'http://10.96.96.53:35357/v2.0/s3tokens',
     headers=headers,
     data=json.dumps(creds),
     verify=None
 )
+
+q(req)
+if req >= 200:
+    print type(req)
 
 print json.dumps(json.loads(req.text), indent=4)
