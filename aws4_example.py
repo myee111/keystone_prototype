@@ -105,10 +105,11 @@ string_to_sign = \
 # ************* TASK 3: CALCULATE THE SIGNATURE *************
 # Create the signing key using the function defined above.
 signing_key = getSignatureKey(secret_key, datestamp, region, service)
+print 'signing key: ' + signing_key
 
 # Sign the string_to_sign using the signing_key
 signature = hmac.new(signing_key, (string_to_sign).encode('utf-8'), hashlib.sha256).hexdigest()
-
+print 'signature: ' + signature
 
 # ************* TASK 4: ADD SIGNING INFORMATION TO THE REQUEST *************
 # The signing information can be either in a query string value or in
@@ -141,6 +142,7 @@ access = access_key
 token = 'R0VUCgoKV2VkLCAxMCBEZWMgMjAxNCAyMjo0NzowNiBHTVQKLw=='
 
 msg = base64.urlsafe_b64decode(token)
+
 signed = base64.encodestring(hmac.new(secret_key, msg, hashlib.sha1).digest()).strip()
 print 'signed: ' + signed
 
@@ -155,7 +157,6 @@ creds = {
         }
 }
 
-print 'signature: ' + signature
 print 'access: ' + access_key
 
 req = requests.post(
