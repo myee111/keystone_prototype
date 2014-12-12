@@ -55,6 +55,7 @@ def get_buckets():
         else:
             abort(404)
 
+
 @app.route('/mygrid1', methods=['GET', 'POST'])
 def middleware():
 
@@ -75,10 +76,13 @@ def middleware():
             abort(404)
 
 
-def return_buckets():
-    if check_credential(request.json['access_id'], request.json['access_secret']):
-            if auth_keystone(my_grid1) is True:
-                return str(s3_get_buckets(my_grid1)), 201
+@app.route('/', methods=['GET'])
+def dump():
+    headers = request.headers
+    q(request.query_string)
+    print headers
+    return headers, 203
+
 
 
 @q
