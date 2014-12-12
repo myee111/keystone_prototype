@@ -12,6 +12,7 @@ import json
 app = Flask(__name__)
 
 PUBLIC_ENDPOINT = 'http://10.96.96.53:5000/v2.0'
+KEYSTONE_SERVER_S3 = 'http://10.96.96.53:35357/v2.0/s3tokens'
 
 my_grid1 = {
     'name': 'mygrid1',
@@ -54,6 +55,25 @@ def get_buckets():
         else:
             abort(404)
 
+@app.route('/mygrid1', methods=['GET', 'POST'])
+def middleware():
+
+    if request.method == 'GET':
+        if check_keystone_token(str(request.headers['access_id']),
+                                str(request.headers['signed_msg']),
+                                str(request.headers['token'])):
+            return str(s3_get_buckets(my_grid1)), 201
+        else:
+            abort(404)
+
+    if request.method == 'POST':
+        if check_keystone_token(str(request.headers['access_id']),
+                                str(request.headers['signed_msg']),
+                                str(request.headers['token'])):
+            return str(s3_create_bucket(my_grid1, request.json['bucket'])), 202
+        else:
+            abort(404)
+
 
 def return_buckets():
     if check_credential(request.json['access_id'], request.json['access_secret']):
@@ -74,6 +94,21 @@ def check_credential_keystone_s3(access_id, access_secret, msg):
 
     req = requests.post(
         keystone_server,
+        headers={'Content-Type': 'application/json'},
+        data=data,
+        verify=None
+    )
+
+    if req.text:
+        return True
+    else:
+        return False
+
+
+def check_keystone_token(access_id, signed_msg, token):
+    data = json.dumps({'credentials': {'access': access_id, 'token': token, 'signature': signed_msg}})
+    req = requests.post(
+        KEYSTONE_SERVER_S3,
         headers={'Content-Type': 'application/json'},
         data=data,
         verify=None
