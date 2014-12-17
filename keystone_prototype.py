@@ -79,13 +79,10 @@ def middleware():
 @app.route('/', methods=['GET'])
 def dump():
     headers = request.headers
-    q(request.query_string)
     print headers
     return headers, 203
 
 
-
-@q
 def check_credential_keystone_s3(access_id, access_secret, msg):
 
     decoded = base64.urlsafe_b64decode(msg)
@@ -123,15 +120,14 @@ def check_keystone_token(access_id, signed_msg, token):
     else:
         return False
 
-@q
+
 def s3_get_buckets(credentials):
     grid = S3Conn(credentials)
     all_buckets = grid.conn.get_all_buckets()
     return all_buckets
 
-@q
+
 def s3_create_bucket(credential, bucket_name):
-    q(credential)
     my_grid = S3Conn(credential)
     try:
         return my_grid.conn.create_bucket(bucket_name)
